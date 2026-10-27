@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>lightbox</title>
+  <meta name="description" content="An image viewer in plain TypeScript: pictures grow out of their thumbnails, swipe between, drag down to close, pinch and double-tap to zoom.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../lightbox.css">
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="demo.js"></script>
+</head>
+<body>
+  <main class="page">
+    <header class="head">
+      <p class="path">github.com/drkxbt/lightbox</p>
+      <h1>lightbox</h1>
+      <p class="lede">An image viewer where pictures grow out of their thumbnails, crop and all. Swipe between them, drag down to close, pinch or double-tap to zoom. Plain TypeScript, no dependencies. Tap any picture below.</p>
+      <div class="snippet"><code>npm install github:drkxbt/lightbox</code></div>
+    </header>
+
+    <section class="group" aria-labelledby="art-title">
+      <h2 id="art-title">A gallery</h2>
+      <p class="sub">Square tiles, a wide one and a tall one. Each picture grows out of exactly the part its tile shows.</p>
+      <div class="art">
+        <a class="tile wide" href="images/penguin-woodblock.webp" data-lightbox="art" data-caption="Woodblock print, above the waves"><img src="images/penguin-woodblock.webp" alt="drk's penguin as a woodblock print, standing on a rock above big waves" width="520" height="520"></a>
+        <a class="tile" href="images/penguin-ninja.webp" data-lightbox="art" data-caption="Ninja, cherry blossoms behind"><img src="images/penguin-ninja.webp" alt="drk's penguin as a ninja with spiky yellow hair and the rainbow visor" width="520" height="520"></a>
+        <a class="tile tall" href="images/penguin-sensei.webp" data-lightbox="art" data-caption="The 3D penguin, animated"><img src="images/penguin-sensei.webp" alt="Animated 3D penguin with the flower crown, a glint sweeping across the rainbow visor" width="400" height="400"></a>
+        <a class="tile" href="images/penguin-riso.webp" data-lightbox="art" data-caption="Riso-print sticker"><img src="images/penguin-riso.webp" alt="drk's penguin as a riso-print sticker" width="520" height="520"></a>
+        <a class="tile" href="images/penguin-clay.webp" data-lightbox="art" data-caption="Claymation"><img src="images/penguin-clay.webp" alt="drk's penguin as a small claymation figure" width="520" height="520"></a>
+        <a class="tile" href="images/penguin-laser.webp" data-lightbox="art" data-caption="Laser eyes"><img src="images/penguin-laser.webp" alt="drk's penguin with red laser eyes" width="520" height="520"></a>
+        <a class="tile wide" href="images/penguin-flat.webp" data-lightbox="art" data-caption="Flat, on sky blue"><img src="images/penguin-flat.webp" alt="drk's penguin drawn flat, on a sky-blue background" width="506" height="506"></a>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="screens-title">
+      <h2 id="screens-title">Big pictures, small thumbnails</h2>
+      <p class="sub">These thumbnails are 640 pixels wide; the full screenshots are 2880. The thumbnail shows at once and the full image takes over when it has loaded. Zoom in to read the numbers.</p>
+      <div class="screens">
+        <a class="shot" href="images/charts.webp" data-lightbox="screens" data-width="2880" data-height="1800" data-caption="charts: candles, a price line and order book depth"><img src="images/charts-thumb.webp" alt="The charts demo: a candle chart with volume, a price line and an order book depth chart" width="640" height="400"></a>
+        <a class="shot" href="images/motion.webp" data-lightbox="screens" data-width="2880" data-height="1800" data-caption="motion: buttons, icons, tabs, a counter and a toast"><img src="images/motion-thumb.webp" alt="The motion tour: an async button, a like, icons, tabs, a counter and a toast" width="640" height="400"></a>
+        <a class="shot banner" href="images/banner.webp" data-lightbox="screens" data-width="1500" data-height="500" data-caption="A wide banner, cropped to fit its tile"><img src="images/banner.webp" alt="drk's penguin reaching out across a fantasy city" width="1500" height="500"></a>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="alone-title">
+      <h2 id="alone-title">On its own</h2>
+      <div class="alone">
+        <a class="avatar" href="images/penguin-flat.webp" data-lightbox="" data-caption="An image with no gallery opens alone"><img src="images/penguin-flat.webp" alt="drk's penguin drawn flat" width="506" height="506"></a>
+        <p>An image with an empty <code>data-lightbox</code> opens by itself, with no counter or arrows. Round, square or cropped, it grows from its own shape.</p>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="keys-title">
+      <h2 id="keys-title">In the viewer</h2>
+      <dl class="keys">
+        <div><dt>Swipe, arrow keys</dt><dd>Next and previous</dd></div>
+        <div><dt>Drag down, Escape, Back</dt><dd>Close</dd></div>
+        <div><dt>Double-tap, pinch, click</dt><dd>Zoom in and out</dd></div>
+        <div><dt>Ctrl and scroll, trackpad pinch</dt><dd>Zoom at the pointer</dd></div>
+        <div><dt>Drag a zoomed image</dt><dd>Look around</dd></div>
+        <div><dt>Tap the picture on a phone</dt><dd>Hide the controls</dd></div>
+      </dl>
+    </section>
+
+    <footer class="foot">
+      <p>MIT licensed. Built by drk.</p>
+      <p>The penguin art is drk's and not covered by the license.</p>
+    </footer>
+  </main>
+</body>
+</html>

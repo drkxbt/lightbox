@@ -1,0 +1,166 @@
+/* lightbox: the image viewer. Colours, timing and the curve are custom properties; the viewer is dark on purpose,
+   so pictures read at their own colours whatever the page around them looks like. */
+
+.lb {
+  --lb-backdrop: rgb(9 9 11 / 0.97);
+  --lb-text: #ffffff;
+  --lb-muted: rgb(255 255 255 / 0.72);
+  --lb-button: rgb(255 255 255 / 0.1);
+  --lb-button-hover: rgb(255 255 255 / 0.18);
+  --lb-z: 1000;
+  /* The open and close: quick to start, long to settle, the way a sheet lands. */
+  --lb-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --lb-duration: 440ms;
+  position: fixed;
+  inset: 0;
+  z-index: var(--lb-z);
+  color: var(--lb-text);
+  overscroll-behavior: contain;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lb[hidden] { display: none; }
+.lb:focus { outline: none; }
+
+.lb-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--lb-backdrop);
+  opacity: 0;
+  transition: opacity var(--lb-duration) var(--lb-ease);
+}
+.lb:is([data-phase="opening-active"], [data-phase="open"]) .lb-backdrop { opacity: 1; }
+.lb[data-dragging] .lb-backdrop { transition: none; }
+.lb[data-phase="closing-active"] .lb-backdrop { transition-duration: calc(var(--lb-duration) * 0.8); }
+
+.lb-track { position: absolute; inset: 0; }
+.lb-track.lb-animate { transition: transform 400ms var(--lb-ease); }
+.lb-slide { position: absolute; inset: 0; }
+.lb-slide[hidden] { display: none; }
+
+/* The frame sits at the image's fitted rectangle. Opening and closing move it between there and the thumbnail;
+   a drag down moves it with the finger. */
+.lb-frame { position: absolute; transform-origin: 0 0; will-change: transform; }
+.lb-frame.lb-animate {
+  transition:
+    transform var(--lb-duration) var(--lb-ease),
+    clip-path var(--lb-duration) var(--lb-ease),
+    opacity 220ms ease;
+}
+.lb-layer { width: 100%; height: 100%; transform-origin: 0 0; }
+.lb-layer.lb-animate { transition: transform 380ms var(--lb-ease); }
+.lb-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+.lb.lb-fine .lb-frame { cursor: zoom-in; }
+.lb.lb-fine[data-zoomed] .lb-frame { cursor: grab; }
+.lb.lb-fine[data-zoomed] .lb-frame:active { cursor: grabbing; }
+
+/* Without a thumbnail on screen, or with reduced motion, the picture fades and settles instead of flying. */
+.lb.lb-fade .lb-frame { transform-origin: 50% 50%; }
+.lb.lb-fade[data-phase="opening"] .lb-track > :nth-child(2) .lb-frame,
+.lb.lb-fade[data-phase="closing-active"] .lb-track > :nth-child(2) .lb-frame { opacity: 0; transform: scale(0.96); }
+
+/* Controls: round keys on the dark, shown once the picture has landed and hidden while it is dragged. */
+.lb-bar,
+.lb-prev,
+.lb-next,
+.lb-caption { opacity: 0; transition: opacity 200ms ease; }
+.lb[data-phase="open"] :is(.lb-bar, .lb-prev, .lb-next, .lb-caption) { opacity: 1; }
+.lb:is([data-quiet], [data-dragging]) :is(.lb-bar, .lb-prev, .lb-next, .lb-caption) { opacity: 0; pointer-events: none; }
+
+.lb-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 12px max(18px, env(safe-area-inset-left));
+}
+.lb-counter {
+  margin-right: auto;
+  color: var(--lb-muted);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.lb-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--lb-button);
+  color: var(--lb-text);
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: background-color 160ms ease, transform 160ms var(--lb-ease), opacity 200ms ease;
+}
+.lb-btn:hover { background: var(--lb-button-hover); }
+.lb-btn:active { transform: scale(0.94); }
+.lb-btn:focus-visible { outline: 2px solid var(--lb-text); outline-offset: 2px; }
+.lb-btn:disabled { opacity: 0.28; cursor: default; }
+.lb-btn:disabled:active { transform: none; }
+.lb-btn[hidden] { display: none; }
+.lb-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.lb-upright { transform-box: fill-box; transform-origin: center; transition: transform 200ms var(--lb-ease); }
+.lb-zoom[data-zoomed] .lb-upright { transform: scaleY(0); }
+
+.lb-prev,
+.lb-next { position: absolute; top: 50%; translate: 0 -50%; }
+.lb-prev { left: max(16px, env(safe-area-inset-left)); }
+.lb-next { right: max(16px, env(safe-area-inset-right)); }
+.lb-prev:active { transform: scale(0.94); }
+/* On touch, a swipe does the job of the arrows. */
+.lb:not(.lb-fine) :is(.lb-prev, .lb-next) { display: none; }
+
+.lb-caption {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%;
+  max-width: min(640px, calc(100% - 32px));
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.42);
+  color: var(--lb-text);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
+  text-wrap: balance;
+  translate: -50% 0;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+}
+.lb-caption[hidden] { display: none; }
+
+.lb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Reduced motion: no flights, no slides; things appear where they end up. */
+@media (prefers-reduced-motion: reduce) {
+  .lb { --lb-duration: 1ms; }
+  .lb-track.lb-animate,
+  .lb-layer.lb-animate { transition-duration: 1ms; }
+}

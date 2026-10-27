@@ -1,0 +1,48 @@
+{
+  "name": "@drkxbt/lightbox",
+  "version": "0.1.0",
+  "description": "An image viewer in plain TypeScript: pictures grow out of their thumbnails, swipe between, drag down to close, pinch and double-tap to zoom. No dependencies.",
+  "license": "MIT",
+  "author": "drk",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./lightbox.css": "./lightbox.css"
+  },
+  "files": [
+    "dist",
+    "lightbox.css"
+  ],
+  "sideEffects": [
+    "*.css"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && node --test \"test/*.test.js\"",
+    "demo": "tsc -p tsconfig.json && node demo/serve.js"
+  },
+  "devDependencies": {
+    "typescript": ">=5.4"
+  },
+  "keywords": [
+    "lightbox",
+    "image-viewer",
+    "gallery",
+    "zoom",
+    "pinch-zoom",
+    "swipe",
+    "photoswipe",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drkxbt/lightbox.git"
+  },
+  "homepage": "https://github.com/drkxbt/lightbox#readme"
+}

@@ -1,0 +1,15 @@
+lightbox
+Copyright 2026 drk
+
+Licensed under the MIT License. See LICENSE.
+
+The demo page ships the Geist and Geist Mono typefaces by Vercel, in collaboration
+with basement.studio, in demo/fonts/. They are licensed under the SIL Open Font
+License 1.1. See demo/fonts/OFL.txt.
+
+The penguin art and the banner in demo/images (penguin-*.webp, banner.webp) are
+drk's personal art and are not covered by the MIT License. Use your own images if
+you build on the demo. The screenshots in demo/images (charts*.webp, motion*.webp)
+show drk's MIT-licensed charts and motion projects.
+
+The library itself bundles no fonts and no images.
