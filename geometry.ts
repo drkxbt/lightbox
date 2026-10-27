@@ -48,7 +48,8 @@ export function fitRect(natural: Size, viewport: Size, padding: Insets, maxScale
 }
 
 export interface Thumb {
-  /** Where the thumbnail's box sits on screen. */
+  /** Where the thumbnail's box sits on screen, untilted: a tilted thumbnail gives its own size around the centre of
+   *  its tilted box. */
   rect: Rect;
   /** How the thumbnail draws its picture into that box. */
   fit: "cover" | "contain";
@@ -56,6 +57,8 @@ export interface Thumb {
   position: Point;
   /** The box's corner radius in px. */
   radius: number;
+  /** How far the thumbnail is turned, in degrees clockwise, for prints laid out at an angle. */
+  rotation?: number;
 }
 
 export interface Flip {
@@ -66,6 +69,9 @@ export interface Flip {
   /** Crops the frame, in its own unscaled pixels, to the part of the picture the thumbnail shows. */
   clip: Insets;
   radius: number;
+  /** Turns the frame by this many degrees around `pivot`, the thumbnail's centre measured from the frame's corner. */
+  rotate: number;
+  pivot: Point;
 }
 
 /**
@@ -97,7 +103,15 @@ export function flipFromThumb(frame: Rect, thumb: Thumb): Flip {
     scale,
     clip,
     radius: thumb.radius / scale,
+    rotate: thumb.rotation ?? 0,
+    pivot: { x: rect.x + rect.width / 2 - frame.x, y: rect.y + rect.height / 2 - frame.y },
   };
+}
+
+/** The frame at rest, written the same way as `flip` so a transition between the two runs function by function:
+ *  the tilt unwinds around the thumbnail's centre while the frame grows. */
+export function restingFlip(flip: Flip): Flip {
+  return { ...flip, x: 0, y: 0, scale: 1, clip: { top: 0, right: 0, bottom: 0, left: 0 }, radius: 0, rotate: 0 };
 }
 
 /** The offset range that keeps a zoomed image covering the viewport along one axis, or centred when it is

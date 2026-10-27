@@ -6,7 +6,7 @@ An image viewer in plain TypeScript with no dependencies. Pictures grow out of t
 
 Most viewers open a picture by fading it in over the page. This one starts from the thumbnail you tapped: if the tile showed only the middle of the picture, the open grows that crop out into the whole picture, and the close shrinks it back into the same tile. On a phone it behaves like the photo apps people already know.
 
-- **Open and close from the thumbnail.** The crop, the corner radius and `object-position` all carry through, so a cover-cropped tile opens without a jump.
+- **Open and close from the thumbnail.** The crop, the corner radius and `object-position` all carry through, so a cover-cropped tile opens without a jump. A tilted thumbnail, like a print laid on a table, turns upright as it opens and tilts back as it lands.
 - **Swipe, drag down, pinch.** Swipe between pictures, drag down to close with the backdrop fading as you go, pinch or double-tap to zoom, and pan with rubber-band edges. A quick flick is enough for all of them.
 - **Desk too.** Arrow keys, Escape, a click to zoom, Ctrl and the wheel or a trackpad pinch to zoom at the pointer, and a sideways trackpad swipe to move on.
 - **Thumbnail first.** The thumbnail shows at once; the full image takes over as soon as it has decoded.
@@ -85,7 +85,7 @@ The viewer stays dark whatever the page looks like, so pictures read at their ow
 
 ## How it works
 
-- **The flight.** The full-size frame is placed where the picture will end up, then moved and scaled onto the thumbnail with a transform and cropped to what the tile shows with a clip path. Animating both to nothing grows the crop out into the whole picture; closing runs the same thing in reverse. Only `transform`, `clip-path` and `opacity` animate.
+- **The flight.** The full-size frame is placed where the picture will end up, then moved and scaled onto the thumbnail with a transform and cropped to what the tile shows with a clip path. Animating both to nothing grows the crop out into the whole picture; closing runs the same thing in reverse. Only `transform`, `clip-path` and `opacity` animate. A tilt is read from the thumbnail's and its ancestors' transforms, and the frame turns around the thumbnail's centre.
 - **Three slides.** The current picture and its neighbours sit side by side. A swipe moves the row; when it lands, the slides rotate behind the scenes and the far one loads the next picture.
 - **Gestures.** One finger decides what it is doing from the way it first moves: across to swipe, down to close, anywhere to pan when zoomed. Two fingers pinch around their midpoint. Release velocity comes from the last 100ms, so a pause before letting go reads as still.
 - **Zoom.** Zooming keeps the point under the fingers in place. A zoomed picture can't be dragged off the screen: past an edge it meets rubber-band resistance and springs back.

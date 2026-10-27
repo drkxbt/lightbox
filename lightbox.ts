@@ -5,11 +5,13 @@ import {
   fitRect,
   flipFromThumb,
   resist,
+  restingFlip,
   shouldDismiss,
   step,
   swipeDirection,
   zoomAt,
   zoomBounds,
+  type Flip,
   type Insets,
   type Point,
   type Rect,
@@ -115,6 +117,35 @@ function iconButton(className: string, label: string, icon: string): HTMLButtonE
   return button;
 }
 
+/** The turn and stretch that the element's and its ancestors' transforms give it on screen. Translations are left
+ *  out; only the linear part matters for the angle and the drawn size. */
+function screenTransform(element: Element): DOMMatrix {
+  let matrix = new DOMMatrix();
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    // The individual properties apply before `transform`, in this order: translate, rotate, scale.
+    const parts: string[] = [];
+    if (style.rotate && style.rotate !== "none") {
+      const turn = style.rotate.split(" ");
+      parts.push(turn.length === 1 ? `rotate(${turn[0]})` : `rotate3d(${turn.slice(0, 3).join(",")},${turn[3]})`);
+    }
+    if (style.scale && style.scale !== "none") {
+      const factors = style.scale.split(" ");
+      parts.push(factors.length === 3 ? `scale3d(${factors.join(",")})` : `scale(${factors.join(",")})`);
+    }
+    if (style.transform !== "none") parts.push(style.transform);
+    if (!parts.length) continue;
+    try {
+      const local = new DOMMatrix(parts.join(" "));
+      local.e = local.f = 0;
+      matrix = local.multiply(matrix);
+    } catch {
+      // A transform DOMMatrix cannot parse is left out rather than guessed at.
+    }
+  }
+  return matrix;
+}
+
 /** How a thumbnail shows its picture, read from its computed style. `ours` is a thumbnail the viewer itself hid
  *  while its picture is open, which still counts as on the page. */
 function readThumb(image: HTMLImageElement, ours = false): Thumb | null {
@@ -128,11 +159,18 @@ function readThumb(image: HTMLImageElement, ours = false): Thumb | null {
   const fraction = (value: string, free: number) =>
     value.endsWith("%") ? parseFloat(value) / 100 : free ? clamp(parseFloat(value) / free, 0, 1) : 0.5;
   const fit = style.objectFit === "contain" || style.objectFit === "scale-down" ? "contain" : "cover";
+  // A tilted thumbnail's bounding box is wider than its picture: take the drawn size around the same centre.
+  const turn = screenTransform(image);
+  const angle = (Math.atan2(turn.b, turn.a) * 180) / Math.PI;
+  const rotation = Math.abs(angle) > 0.05 ? angle : 0;
+  const width = rotation ? image.offsetWidth * Math.hypot(turn.a, turn.b) : box.width;
+  const height = rotation ? image.offsetHeight * Math.hypot(turn.c, turn.d) : box.height;
   return {
-    rect: { x: box.left, y: box.top, width: box.width, height: box.height },
+    rect: { x: box.left + (box.width - width) / 2, y: box.top + (box.height - height) / 2, width, height },
     fit,
-    position: { x: fraction(px, box.width), y: fraction(py, box.height) },
+    position: { x: fraction(px, width), y: fraction(py, height) },
     radius: parseFloat(style.borderTopLeftRadius) || 0,
+    rotation,
   };
 }
 
@@ -360,7 +398,9 @@ export function lightbox(root: ParentNode = document, options: LightboxOptions =
     }
   }
 
-  function setFlip(slide: Slide, flip: ReturnType<typeof flipFromThumb> | null) {
+  // A tilted flight turns around the thumbnail's centre: over to it, turn, back, then the usual move and scale. Both
+  // ends of the flight are written this way so the transition pairs the functions one to one.
+  function setFlip(slide: Slide, flip: Flip | null, tilted = Boolean(flip?.rotate)) {
     const { style } = slide.frame;
     if (!flip) {
       style.transform = "";
@@ -368,7 +408,10 @@ export function lightbox(root: ParentNode = document, options: LightboxOptions =
       return;
     }
     const { top, right, bottom, left } = flip.clip;
-    style.transform = `translate(${flip.x}px, ${flip.y}px) scale(${flip.scale})`;
+    const { x: px, y: py } = flip.pivot;
+    style.transform = tilted
+      ? `translate(${px}px, ${py}px) rotate(${flip.rotate}deg) translate(${flip.x - px}px, ${flip.y - py}px) scale(${flip.scale})`
+      : `translate(${flip.x}px, ${flip.y}px) scale(${flip.scale})`;
     style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px round ${flip.radius}px)`;
   }
 
@@ -432,7 +475,7 @@ export function lightbox(root: ParentNode = document, options: LightboxOptions =
     requestAnimationFrame(() => {
       viewer.dataset.phase = "opening-active";
       slide.frame.classList.add("lb-animate");
-      setFlip(slide, flip ? { x: 0, y: 0, scale: 1, clip: { top: 0, right: 0, bottom: 0, left: 0 }, radius: 0 } : null);
+      setFlip(slide, flip ? restingFlip(flip) : null, Boolean(flip?.rotate));
       afterTransition(slide.frame, () => {
         // Closed before the opening finished: the close owns the frame now.
         if (phase !== "opening") return;
@@ -456,6 +499,14 @@ export function lightbox(root: ParentNode = document, options: LightboxOptions =
     slide.zoom = { scale: 1, x: 0, y: 0 };
     slide.paint(true);
     viewer.classList.toggle("lb-fade", !flip);
+    if (flip?.rotate) {
+      // Where the frame is now (at rest, or partway down a drag), rewritten in the tilted form so the flight back
+      // turns smoothly instead of falling back to matrix interpolation.
+      const now = new DOMMatrix(getComputedStyle(slide.frame).transform);
+      slide.frame.classList.remove("lb-animate");
+      setFlip(slide, { ...restingFlip(flip), x: now.e, y: now.f, scale: now.a }, true);
+      void slide.frame.offsetWidth;
+    }
     slide.frame.classList.add("lb-animate");
     requestAnimationFrame(() => {
       viewer.dataset.phase = "closing-active";

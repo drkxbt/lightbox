@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { Velocity, clampZoom, fitRect, flipFromThumb, resist, rubberband, shouldDismiss, step, swipeDirection, zoomAt, zoomBounds } from "../dist/index.js";
+import { Velocity, clampZoom, fitRect, flipFromThumb, resist, restingFlip, rubberband, shouldDismiss, step, swipeDirection, zoomAt, zoomBounds } from "../dist/index.js";
 
 const near = (actual, expected, digits = 6) => assert.ok(Math.abs(actual - expected) < 10 ** -digits, `${actual} is not ${expected}`);
 const none = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -101,4 +101,19 @@ test("release velocity reads the last 100ms, so a pause before letting go reads 
   velocity.add(100, 0, 100);
   near(velocity.get(100).x, 1);
   near(velocity.get(400).x, 0);
+});
+
+test("a tilted thumbnail turns the frame around its own centre, and the resting frame keeps that pivot", () => {
+  const frame = { x: 100, y: 50, width: 800, height: 800 };
+  const thumb = { rect: { x: 300, y: 400, width: 200, height: 200 }, fit: "cover", position: { x: 0.5, y: 0.5 }, radius: 10, rotation: -6 };
+  const flip = flipFromThumb(frame, thumb);
+  assert.equal(flip.rotate, -6);
+  assert.deepEqual(flip.pivot, { x: 300, y: 450 });
+  // The pivot is where the thumbnail's centre lands, so turning around it leaves the centre in place.
+  near(flip.x + 400 * flip.scale, flip.pivot.x);
+  near(flip.y + 400 * flip.scale, flip.pivot.y);
+  const rest = restingFlip(flip);
+  assert.deepEqual([rest.x, rest.y, rest.scale, rest.rotate, rest.radius], [0, 0, 1, 0, 0]);
+  assert.deepEqual(rest.pivot, flip.pivot);
+  assert.equal(flipFromThumb(frame, { ...thumb, rotation: undefined }).rotate, 0);
 });
