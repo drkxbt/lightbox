@@ -2,7 +2,7 @@
 
 An image viewer in plain TypeScript with no dependencies. Pictures grow out of their thumbnails, crop and all, and fly back when closed. Swipe between them, drag down to close, pinch or double-tap to zoom, and drag a zoomed picture to look around.
 
-Try the [image viewer on drk.vc](https://drk.vc/repo?id=lightbox#preview).
+Try the [image viewer on drk.vc](https://drk.vc/source/lightbox#preview).
 
 ![A picture growing out of its tile, a swipe to a screenshot, a zoom in to read the numbers, and a drag down that sends it back to its tile](demo/preview.webp)
 
